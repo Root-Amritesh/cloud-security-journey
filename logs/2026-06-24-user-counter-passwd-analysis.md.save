@@ -1,0 +1,644 @@
+# 2026-06-24 — Script 4: Interactive Shell User Counter
+
+## Task Objective
+
+Build a Bash script that:
+
+* Reads `/etc/passwd`
+* Identifies accounts with interactive login shells
+* Extracts usernames
+* Counts matching users
+* Displays both the usernames and the total count
+
+This task serves as Script 4 of 4 for Gate 1 preparation.
+
+The purpose is not user counting itself.
+
+The purpose is learning how Linux text-processing tools can be chained together using pipelines to filter, transform, and analyze data.
+
+---
+
+# Deliverable
+
+## user_counter.sh
+
+```bash
+#!/bin/bash
+
+# Script 4: List and count interactive shell users
+# No arguments needed — reads /etc/passwd directly
+
+echo ""
+echo "=== INTERACTIVE SHELL USERS ==="
+echo ""
+
+grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd
+
+echo ""
+
+grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd | awk -F: '{print $1}'
+
+echo ""
+
+TOTAL=$(grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd | wc -l)
+
+echo "Total: $TOTAL interactive users"
+```
+
+---
+
+# Lab Environment
+
+Operating System:
+
+```text
+Kali Linux
+```
+
+Repository:
+
+```text
+cloud-security-journey
+```
+
+Script Location:
+
+```text
+cloud-security-journey/scripts/user_counter.sh
+```
+
+---
+
+# Understanding /etc/passwd
+
+Before building the script, the contents of `/etc/passwd` were inspected.
+
+Example entry:
+
+```text
+kali:x:1000:1000::/home/kali:/usr/bin/zsh
+```
+
+Field breakdown:
+
+```text
+Field 1 = Username
+Field 2 = Password Placeholder
+Field 3 = UID
+Field 4 = GID
+Field 5 = User Information
+Field 6 = Home Directory
+Field 7 = Login Shell
+```
+
+For this task only two fields matter:
+
+```text
+Field 1 = Username
+Field 7 = Login Shell
+```
+
+---
+
+# Commands Executed
+
+### Inspect User Database
+
+```bash
+cat /etc/passwd
+```
+
+### Identify Interactive Shell Accounts
+
+```bash
+grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd
+```
+
+Output:
+
+```text
+root:x:0:0:root:/root:/usr/bin/zsh
+postgres:x:115:118:PostgreSQL administrator:/var/lib/postgresql:/bin/bash
+kali:x:1000:1000::/home/kali:/usr/bin/zsh
+```
+
+### Initial Counting Attempt
+
+```bash
+grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd | wc -1
+```
+
+Result:
+
+```text
+wc: invalid option -- '1'
+```
+
+### Correct Counting Command
+
+```bash
+grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd | wc -l
+```
+
+Output:
+
+```text
+3
+```
+
+### Extract Usernames Only
+
+```bash
+grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd | awk -F: '{print $1}'
+```
+
+Output:
+
+```text
+root
+postgres
+kali
+```
+
+### Create Script
+
+```bash
+nano user_counter.sh
+```
+
+### Make Executable
+
+```bash
+chmod +x user_counter.sh
+```
+
+### Verify Permissions
+
+```bash
+ls -l user_counter.sh
+```
+
+---
+
+# Issues Encountered
+
+## Issue 1 — echo Command Failure
+
+Initial script contained:
+
+```bash
+echo"=== INTERACTIVE SHELL USERS ==="
+```
+
+Execution produced:
+
+```text
+echo=== INTERACTIVE SHELL USERS ===: command not found
+```
+
+Cause:
+
+No space existed between:
+
+```text
+echo
+```
+
+and
+
+```text
+"=== INTERACTIVE SHELL USERS ==="
+```
+
+Bash interpreted the entire line as a command name.
+
+Incorrect:
+
+```bash
+echo"Hello"
+```
+
+Correct:
+
+```bash
+echo "Hello"
+```
+
+Resolution:
+
+Added the required space.
+
+---
+
+## Issue 2 — wc Typo
+
+Initial command:
+
+```bash
+wc -1
+```
+
+Result:
+
+```text
+wc: invalid option -- '1'
+```
+
+Cause:
+
+Used numeric one (`1`) instead of lowercase L (`l`).
+
+Incorrect:
+
+```bash
+wc -1
+```
+
+Correct:
+
+```bash
+wc -l
+```
+
+Lesson:
+
+Many Linux flags are case-sensitive.
+
+---
+
+# Pipeline Breakdown
+
+Core command:
+
+```bash
+grep -E "(/bin/bash|/bin/sh|/bin/zsh)$" /etc/passwd | awk -F: '{print $1}'
+```
+
+Visual representation:
+
+```text
+/etc/passwd
+      |
+      v
+    grep
+      |
+      v
+matching users
+      |
+      v
+     awk
+      |
+      v
+ usernames
+```
+
+---
+
+# Concept 1 — grep
+
+```bash
+grep -E "pattern"
+```
+
+Purpose:
+
+Filter text based on a matching pattern.
+
+---
+
+## -E
+
+Enables Extended Regular Expressions.
+
+Allows:
+
+```text
+option1|option2|option3
+```
+
+---
+
+## |
+
+Means:
+
+```text
+OR
+```
+
+---
+
+## $
+
+Means:
+
+```text
+End of line
+```
+
+The expression:
+
+```bash
+(/bin/bash|/bin/sh|/bin/zsh)$
+```
+
+means:
+
+```text
+Match lines ending with:
+
+/bin/bash
+OR
+/bin/sh
+OR
+/bin/zsh
+```
+
+This ensures we are checking the shell field at the end of each passwd entry.
+
+---
+
+# Concept 2 — Pipes
+
+```bash
+|
+```
+
+The output of one command becomes the input of another.
+
+Example:
+
+```bash
+grep ... | awk ...
+```
+
+This allows complex processing without temporary files.
+
+---
+
+# Concept 3 — awk
+
+```bash
+awk -F: '{print $1}'
+```
+
+The option:
+
+```bash
+-F:
+```
+
+sets the field separator to:
+
+```text
+:
+```
+
+Example:
+
+```text
+kali:x:1000:1000::/home/kali:/usr/bin/zsh
+```
+
+becomes:
+
+```text
+$1 = kali
+$2 = x
+$3 = 1000
+...
+```
+
+Command:
+
+```bash
+print $1
+```
+
+outputs only the username.
+
+---
+
+# Concept 4 — wc -l
+
+```bash
+wc -l
+```
+
+Purpose:
+
+Count lines.
+
+Input:
+
+```text
+root
+postgres
+kali
+```
+
+Output:
+
+```text
+3
+```
+
+This becomes the total interactive user count.
+
+---
+
+# Concept 5 — Command Substitution
+
+```bash
+TOTAL=$(grep ... | wc -l)
+```
+
+The command runs first.
+
+Its output is captured.
+
+The output becomes the value of:
+
+```bash
+TOTAL
+```
+
+Result:
+
+```bash
+TOTAL=3
+```
+
+This concept was first introduced in Script 3 and reinforced here.
+
+---
+
+-----------NOTES-----------
+
+# What Was Actually Learned Today
+
+Most people would describe this task as:
+
+```text
+Learning how to count Linux users.
+```
+
+That is not the real lesson.
+
+The actual lesson was learning how to process structured text using Linux pipelines.
+
+The workflow was:
+
+```text
+Read Data
+    ↓
+Filter Data
+    ↓
+Extract Fields
+    ↓
+Count Results
+```
+
+This pattern appears everywhere in:
+
+* Log analysis
+* Threat hunting
+* Incident response
+* Linux administration
+* Cloud operations
+* SIEM investigations
+
+---
+
+# Security Relevance
+
+One of the first questions during system auditing is:
+
+```text
+Which accounts can actually log into this machine?
+```
+
+The answer is often derived from:
+
+```bash
+/etc/passwd
+```
+
+Accounts using:
+
+```text
+/bin/bash
+/bin/sh
+/bin/zsh
+```
+
+are typically interactive.
+
+Accounts using:
+
+```text
+/sbin/nologin
+/bin/false
+```
+
+are usually service accounts.
+
+Understanding how to identify and enumerate these users is a foundational Linux security skill.
+
+---
+
+# Toolbox Expansion
+
+New capabilities reinforced today:
+
+✓ grep
+
+✓ Regular Expressions
+
+✓ End-of-line matching ($)
+
+✓ awk field extraction
+
+✓ Pipe chaining
+
+✓ wc -l
+
+✓ Parsing structured files
+
+✓ Reading /etc/passwd
+
+✓ Command substitution
+
+✓ User enumeration
+
+---
+
+# Why This Task Exists In The Roadmap
+
+Script 4 is the first true text-processing exercise.
+
+The objective is teaching:
+
+```text
+grep
+awk
+pipes
+regular expressions
+field extraction
+```
+
+These tools are heavily used in:
+
+* Log analysis
+* Security monitoring
+* Threat hunting
+* Incident response
+* Linux administration
+
+The user count is simply the exercise used to introduce these concepts.
+
+-----------END NOTES-----------
+
+---
+
+# Skills Demonstrated
+
+✓ Bash scripting
+
+✓ Linux account analysis
+
+✓ Text filtering
+
+✓ Regular expressions
+
+✓ Pipeline construction
+
+✓ Data extraction
+
+✓ User enumeration
+
+✓ Command substitution
+
+✓ Structured text processing
+
+✓ Linux troubleshooting
+
+---
+
+# Result
+
+Successfully created and executed a Bash script that identifies interactive shell users from `/etc/passwd`, extracts usernames, and calculates the total count.
+
+Verified result:
+
+```text
+root
+postgres
+kali
+
+Total: 3 interactive users
+```
+
+Script 4 of 4 completed.
+
+---
