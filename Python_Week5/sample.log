@@ -1,0 +1,11 @@
+INFO Server started
+INFO User admin logged in
+WARNING Disk usage is 80%
+ERROR Database connection failed
+INFO Retrying connection
+ERROR Authentication failed for user root
+INFO Backup completed
+ERROR Unable to write to log file
+WARNING High memory usage
+INFO Server shutting down
+
