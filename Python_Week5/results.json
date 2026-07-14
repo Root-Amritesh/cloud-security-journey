@@ -1,0 +1,5 @@
+{
+    "app.log": 10,
+    "auth.log": 4,
+    "system.log": 1
+}
