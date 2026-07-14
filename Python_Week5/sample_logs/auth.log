@@ -1,0 +1,9 @@
+INFO Authentication started
+ERROR Invalid password
+ERROR User locked
+INFO Authentication complete
+INFO Login attempt
+FAILED Password incorrect
+INFO Login success
+FAILED Account locked
+INFO Logout

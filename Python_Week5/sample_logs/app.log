@@ -1,0 +1,32 @@
+
+INFO Server started
+INFO User logged in
+ERROR Database failed
+INFO Backup completed
+ERROR Login failed
+INFO User logged in
+ERROR Database failed
+WARNING Disk almost full
+INFO Backup completed
+ERROR Login failed
+INFO User logged in
+ERROR Login failed
+WARNING CPU usage high
+INFO Backup completed
+
+INFO Server started
+INFO User admin logged in
+WARNING Disk usage is 80%
+ERROR Database connection failed
+INFO Retrying connection
+ERROR Authentication failed for user root
+INFO Backup completed
+ERROR Unable to write to log file
+WARNING High memory usage
+INFO Server shutting down
+
+INFO Server started
+ERROR Database connection failed
+INFO Backup completed
+ERROR User authentication failed
+INFO Shutdown complete
